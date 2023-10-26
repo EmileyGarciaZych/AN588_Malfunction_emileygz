@@ -8,7 +8,6 @@ output: html_document
 install.packages("ggplot2")
 ```
 
-
 1) Write a simple R function, Z.prop.test(), that can perform one- or two- sample Z tests for proportion data, using the following guidelines. 
 
 ```{r}
@@ -62,7 +61,6 @@ Z.prop.test <- function(p1, n1, p2 = NULL, n2 = NULL, p0, alternative = "two.sid
     return(NULL)
   }
 }
-
   
 ```
 2) The dataset from Kamilar and Cooper has in it a large number of variables related to life history and body size. For this exercise, the end aim is to fit a simple linear regression model to predict longevity (MaxLongevity_m) measured in months from species’ brain size (Brain_Size_Species_Mean) measured in grams. Do the following for both longevity~brain size and log(longevity)~log(brain size):
@@ -74,37 +72,27 @@ d <- read.csv(data, header = TRUE, sep = ",", stringsAsFactors = FALSE)
 d
 ```
 
-
-
 ```{r}
 is.atomic(d$MaxLongevity_m)
 ```
 
-
-```{r}
-# Fit longevity~brain size model
-model1 <- lm(d$MaxLongevity_m ~ d$Brain_Size_Species_Mean, data = d)
-```
-
-
-```{r}
-# Fit log(longevity)~log(brain size) model
-model2 <- lm(log(d$MaxLongevity_m) ~ log(d$Brain_Size_Species_Mean), data = d)
-```
-
+a) Fit the regression model and, using {ggplot2}, produce a scatterplot with the fitted line superimposed upon the data. Append the the fitted model equation to your plot (HINT: use the function geom_text()).
 
 ```{r}
 library(ggplot2)
-# Create a scatterplot
-scatterplot1 <- ggplot(d, aes(x = Brain_Size_Species_Mean, y = MaxLongevity_m)) +
-  geom_point() +  # Add points
-  geom_smooth(method = "lm", formula = y ~ x, color = "blue", se = FALSE) +  # Add the fitted line
-  geom_text(aes(label = paste("y = ", round(coef(model1)[1], 2), " + ", round(coef(model1)[2], 2), "x")), 
-            x = min(d$Brain_Size_Species_Mean), y = max(d$MaxLongevity_m), 
-            hjust = 0, vjust = 1, color = "blue") +  # Add the equation to the plot
-  labs(title = "Scatterplot: Longevity ~ Brain Size",
-       x = "Brain Size (grams)",
-       y = "Longevity (months)")
+
+# Fit longevity~brain size model
+model1 <- lm(d$MaxLongevity_m ~ d$Brain_Size_Species_Mean, data = d)
+
+# Fit log(longevity)~log(brain size) model
+model2 <- lm(log(d$MaxLongevity_m) ~ log(d$Brain_Size_Species_Mean), data = d)
+
+# produce the scatterplot using ggplot()
+scatterplot_longevity_brainsize <- ggplot(d, aes(x = Brain_Size_Species_Mean, y = MaxLongevity_m)) + 
+  geom_point() +  # graph the points
+  geom_smooth(method = "lm", formula = y ~ x, color = "orange", se = FALSE) +  # Add the fitted line
+  geom_text(aes(label = paste("y = ", round(coef(model1)[1], 2), " + ", round(coef(model1)[2], 2), "x")), x = min(d$Brain_Size_Species_Mean), y = max(d$MaxLongevity_m),  hjust = 0, vjust = 1, color = "orange") +  # write the equation for the fitted line
+  labs(title = "Scatterplot: Longevity ~ Brain Size", x = "Brain Size (grams)", y = "Longevity (months)")
 
 print(scatterplot1)
 ```
@@ -112,10 +100,10 @@ print(scatterplot1)
 # Create scatterplot for log(longevity)~log(brain size)
 plot2 <- ggplot(d, aes(x = log(Brain_Size_Species_Mean), y = log(MaxLongevity_m))) +
   geom_point() +
-  geom_smooth(method = "lm", formula = y ~ x, color = "green", se = FALSE) +
+  geom_smooth(method = "lm", formula = y ~ x, color = "purple", se = FALSE) +
   geom_text(aes(label = paste("log(y) = ", round(coef(model2)[1], 2), " + ", round(coef(model2)[2], 2), "log(x)")), 
             x = min(log(d$Brain_Size_Species_Mean)), y = max(log(d$MaxLongevity_m)), 
-            hjust = 0, vjust = 1, color = "green") +
+            hjust = 0, vjust = 1, color = "purple") +
   labs(title = "log(Longevity) ~ log(Brain Size)", x = "log(Brain Size)", y = "log(Longevity)")
 plot2
 ```
