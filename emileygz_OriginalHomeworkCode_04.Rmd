@@ -75,7 +75,7 @@ Z.prop.test <- function(p1, n1, p2 = NULL, n2 = NULL, p0, alternative = "two.sid
 
 ```{r}
 k_and_c <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall23/KamilarAndCooperData.csv")
-d <- read.csv(data, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+d <- read.csv(k_and_c, header = TRUE, stringsAsFactors = FALSE)
 d
 ```
 
@@ -125,16 +125,15 @@ p_value <- summary(model1)$coefficient["Brain_Size_Species_Mean"]
 conf_interval <- confint(model1, level = 0.90)["Brain_Size_Species_Mean"]
 
 # Interpretation
-cat("Point estimate of the slope (β1):", slope_estimate, "\n")
-cat("Hypothesis test (β1 ≠ 0):\n")
-cat("   - p-value:", p_value, "\n")
-if (p_value < 0.05) {
-  cat("   - Interpretation: We reject the null hypothesis (β1 = 0) at the 0.05 significance level.\n")
-} else {
-  cat("   - Interpretation: We do not have sufficient evidence to reject the null hypothesis (β1 = 0) at the 0.05 significance level.\n")
-}
-cat("90% Confidence Interval for the slope (β1): [", conf_interval[1], ",", conf_interval[2], "]\n")
-
+##cat("Point estimate of the slope (β1):", slope_estimate, "\n")
+##cat("Hypothesis test (β1 ≠ 0):\n")
+##cat("   - p-value:", p_value, "\n")
+##if (p_value < 0.05) {
+##  cat("   - Interpretation: We reject the null hypothesis (β1 = 0) at the 0.05 significance level.\n")
+##} else {
+##  cat("   - Interpretation: We do not have sufficient evidence to reject the null hypothesis (β1 = 0) at the 0.05 significance level.\n")
+##}
+##cat("90% Confidence Interval for the slope (β1): [", conf_interval[1], ",", conf_interval[2], "]\n")
 
 ```
 
