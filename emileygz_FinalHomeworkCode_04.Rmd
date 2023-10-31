@@ -1,0 +1,168 @@
+---
+title: "emileygz_FinalHomeworkCode_04"
+author: "Emiley Garcia-Zych"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Homework 4: What's Your Malfunction? 
+
+## Emiley Garcia-Zych
+
+```{r}
+install.packages("gridExtra")
+install.packages("lmodel2")
+```
+
+### [1] Write a simple R function, z.prop.test(), that can perform one- or two- sample Z-tests for proportion data, using the following guidelines: 
+
+```{r}
+Z.prop.test <- function(p1, n1, p2 = NULL, n2 = NULL, p0, alternative = "two.sided", conf.level = 0.95) { # defines a new fucntion "Z.prop.test()" that takes the arguments "p1" and "p2", sample sizes "n1" and "n2", null hypothesis proportion "p0", the type of test, and confidence level of 95%. If p2 and n2 are not provided, the test will be able to run a one-sample test. 
+  
+  one_sample_test <- is.null(p2) || is.null(n2) # Checks if either p2 or n2 is NULL to determine one-sample or two-sample test
+  
+  # Calculate the estimated proportion in a two-sample case
+  if (one_sample_test) {
+    p1_hat <- p1
+  } 
+  else {
+    p1_hat <- p1
+    p2_hat <- p2
+  }
+  
+  # Check rules of thumb
+  if (n1 * p1_hat > 5 && n1 * (1 - p1_hat) > 5 && (one_sample_test || (n2 * p2_hat > 5 && n2 * (1 - p2_hat) > 5))) { ##makes sure both samples are large enough to run the tests. 
+    standard_error <- sqrt(p1_hat * (1 - p1_hat) / n1) # Calculate the standard error
+    
+    if (!one_sample_test) { #checks to see if it is a two-sample test. If it is a one-sample test, it continues to the else...
+      standard_error2 <- sqrt(p2_hat * (1 - p2_hat) / n2)
+      pooled_standard_error <- sqrt((standard_error^2 / n1) + (standard_error2^2 / n2))
+      Z_score <- (p1_hat - p2_hat) / pooled_standard_error ##calculates Z statistic 
+    } 
+    else {
+      Z_score <- (p1_hat - p0) / standard_error
+    }
+    
+    if (alternative == "greater") {
+      P <- 1 - pnorm(Z)
+    } else if (alternative == "less") {
+      P <- pnorm(Z)
+    } else {
+      P <- 2 * (1 - pnorm(abs(Z)))
+    }
+    
+    # Calculate the confidence interval
+    alpha <- 1 - conf.level
+    if (one_sample_test) {
+      margin_of_error <- qnorm(1 - alpha / 2) * standard_error
+      CI <- c(p1_hat - margin_of_error, p1_hat + margin_of_error)
+    } else {
+      margin_of_error <- qnorm(1 - alpha / 2) * pooled_standard_error
+      CI <- c(p1_hat - p2_hat - margin_of_error, p1_hat - p2_hat + margin_of_error)
+    } 
+    
+    result <- list(Z = Z, P = P, CI = CI)
+    return(result)
+  } else { ##returns a warning and lets the user know there was some issue with the data. 
+    warning("The rules of thumb (n*p > 5 and n*(1-p) > 5) are violated. The results may not be valid.")
+    return(NULL)
+  }
+}
+
+```
+
+### [2] The dataset from Kamilar and Cooper has in it a large number of variables related to life history and body size. For this exercise, the end aim is to fit a simple linear regression model to predict longevity (`MaxLongevity_m`) measured in months from species\' brain size (`Brain_Size_Species_Mean`) measured in grams. Do the following for both `longevity~brain size` and `log(longevity)~log(brain size)`:
+
+```{r}
+k_and_c <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall23/KamilarAndCooperData.csv")
+d <- read.csv(k_and_c, header = TRUE, stringsAsFactors = FALSE)
+d
+```
+
+#### [a] Fit the regression model and, using {ggplot2}, produce a scatterplot with the fitted line superimposed upon the data. Append the the fitted model equation to your plot (HINT: use the function `geom_text()`).
+
+##### *For longevity \~ brain size*
+
+```{r}
+library(ggplot2)
+
+# Fit longevity~brain size model
+mod1 <- lm(MaxLongevity_m ~ Brain_Size_Species_Mean, data = d)
+
+plot1 <- ggplot(d, aes((Brain_Size_Species_Mean), (MaxLongevity_m), label = rownames(d))) + geom_point() + geom_smooth(method = "lm", formula = y ~ x, color = "pink") 
+
+plot1
+##plot1 + geom_text(check_overlap = TRUE)
+
+```
+
+##### *For log(longevity) \~ log(brain size)*
+
+```{r}
+# Fit log(longevity)~log(brain size) model
+mod2 <- lm(log(MaxLongevity_m) ~ log(Brain_Size_Species_Mean), data = d)
+
+plot2 <- ggplot(d, aes(log(Brain_Size_Species_Mean), log(MaxLongevity_m), label = rownames(d)))+ geom_point() + geom_smooth(method = "lm", formula = y ~ x, color = "red") 
+
+##plot2 + geom_text(check_overlap = TRUE)
+plot2
+
+```
+
+#### [b] Identify and interpret the point estimate of the slope (β1), as well as the outcome of the test associated with the hypotheses H0: β1 = 0; HA: β1 ≠ 0. Also, find a 90 percent CI for the slope (β1) parameter.
+
+##### *For longevity \~ brain size*
+
+```{r}
+summary_lm <- summary(mod1)
+slope_estimate <- summary_lm["coefficients"]
+slope_estimate
+```
+
+β1 = 1.21799
+
+```{r}
+confint(mod1, level = 0.9)
+```
+
+##### *For log(longevity) \~ log(brain size)*
+
+```{r}
+summary_log <- summary(mod2)
+slope_estimate_log <- summary_log["coefficients"]
+slope_estimate_log
+```
+
+β1 = 0.2341496
+
+```{r}
+confint(mod2, level = 0.9)
+```
+
+#### [c] Using your model, add lines for the 90 percent confidence and prediction interval bands on the plot and add a legend to differentiate between the lines.
+
+##### *For longevity \~ brain size*
+
+```{r}
+
+
+
+```
+
+#### [d] Produce a point estimate and associated 90 percent PI for the longevity of a species whose brain weight is 800 gm. Do you trust the model to predict observations accurately for this value of the explanatory variable? Why or why not?
+
+*For longevity \~ brain size*
+
+```{r}
+pi1 <- predict(mod1, newdata = data.frame(Brain_Size_Species_Mean = 800), interval = "prediction", level = 0.90)
+pi1
+```
+
+*For log(longevity) \~ log(brain size)*
+
+```{r}
+pi2 <- predict(mod2, newdata = data.frame(Brain_Size_Species_Mean = 800), interval = "prediction", level = 0.90)
+pi2
+```
+
+#### [e] Looking at your two models, which do you think is better? Why?
