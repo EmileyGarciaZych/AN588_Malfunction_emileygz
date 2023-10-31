@@ -93,16 +93,16 @@ a)  Fit the regression model and, using {ggplot2}, produce a scatterplot with th
 library(ggplot2)
 
 # Fit longevity~brain size model
-model1 <- lm(d$MaxLongevity_m ~ d$Brain_Size_Species_Mean, data = d)
+model1 <- lm(MaxLongevity_m ~ Brain_Size_Species_Mean, data = d)
 
-plot1 <- ggplot(d, aes((d$Brain_Size_Species_Mean), (d$MaxLongevity_m), label = rownames(d))) + geom_smooth(method = "lm", formula = y ~ x, color = "pink") 
+plot1 <- ggplot(d, aes((Brain_Size_Species_Mean), (MaxLongevity_m), label = rownames(d))) + geom_smooth(method = "lm", formula = y ~ x, color = "pink") 
 plot1 + geom_text(check_overlap = TRUE)
 
 ```
 
 ```{r}
 # Fit log(longevity)~log(brain size) model
-model2 <- lm(log(d$MaxLongevity_m) ~ log(d$Brain_Size_Species_Mean), data = d)
+model2 <- lm(log(MaxLongevity_m) ~ log(Brain_Size_Species_Mean), data = d)
 
 plot2 <- ggplot(d, aes(log(Brain_Size_Species_Mean), log(MaxLongevity_m), label = rownames(d)))+ geom_smooth(method = "lm", formula = y ~ x, color = "red") 
 
@@ -113,43 +113,33 @@ plot2 + geom_text(check_overlap = TRUE)
 b) Identify and interpret the point estimate of the slope (β1), as well as the outcome of the test associated with the hypotheses H0: β1 = 0; HA: β1 ≠ 0. Also, find a 90 percent CI for the slope (β1) parameter.
 
 ```{r}
-# Assuming you have fitted a linear regression model, e.g., model1
-
-# Point estimate of the slope (β1)
-slope_estimate <- coef(model1)["Brain_Size_Species_Mean"]
-
-# Conduct the hypothesis test and find the p-value
-p_value <- summary(model1)$coefficient["Brain_Size_Species_Mean"]
-
-# 90% confidence interval for the slope (β1)
-conf_interval <- confint(model1, level = 0.90)["Brain_Size_Species_Mean"]
-
-# Interpretation
-##cat("Point estimate of the slope (β1):", slope_estimate, "\n")
-##cat("Hypothesis test (β1 ≠ 0):\n")
-##cat("   - p-value:", p_value, "\n")
-##if (p_value < 0.05) {
-##  cat("   - Interpretation: We reject the null hypothesis (β1 = 0) at the 0.05 significance level.\n")
-##} else {
-##  cat("   - Interpretation: We do not have sufficient evidence to reject the null hypothesis (β1 = 0) at the 0.05 significance level.\n")
-##}
-##cat("90% Confidence Interval for the slope (β1): [", conf_interval[1], ",", conf_interval[2], "]\n")
-
-```
-
-
-```{r}
 summary(model1)
-summary(model2)
 ```
+Model 1
+B1 = Brain_Size_Species_Mean = 1.2180
+
+Model 2
+B1 = log(d$Brain_Size_Species_Mean) = 0.23415
+
+We accept the alternative hypothesis. 
+
+c) Using your model, add lines for the 90 percent confidence and prediction interval bands on the plot and add a legend to differentiate between the lines.
 
 ```{r}
-confint(model1, level = 0.9)
-confint(model2, level = 0.9)
+##confint(model1, level = 0.9)
+##confint(model2, level = 0.9)
+
+pi1 <- predict(model1, newdata = data.frame(Brain_Size_Species_Mean = 800), interval = "prediction", level = 0.90)
+head(pi1)
+
+##pi2 <- predict(model2, newdata=data.frame(Brain_Size_Species_Mean), ##interval = "prediction", level = 0.90)
+##head(pi2)
 ```
+d) Produce a point estimate and associated 90 percent PI for the longevity of a species whose brain weight is 800 gm. Do you trust the model to predict observations accurately for this value of the explanatory variable? Why or why not?
 
 ```{r}
 # Predict longevity for species with brain weight of 800 gm using the first model
+
 new_data <- data.frame(Brain_Size_Species_Mean = 800)
 predicted_longevity <- predict(model1, newdata = new_data)
 
