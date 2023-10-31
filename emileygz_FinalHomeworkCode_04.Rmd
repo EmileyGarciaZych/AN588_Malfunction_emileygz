@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
-# Homework 4: What's Your Malfunction? 
+# Homework 4: What's Your Malfunction?
 
 ## Emiley Garcia-Zych
 
@@ -14,7 +14,7 @@ install.packages("gridExtra")
 install.packages("lmodel2")
 ```
 
-### [1] Write a simple R function, z.prop.test(), that can perform one- or two- sample Z-tests for proportion data, using the following guidelines: 
+### [1] Write a simple R function, z.prop.test(), that can perform one- or two- sample Z-tests for proportion data, using the following guidelines:
 
 ```{r}
 Z.prop.test <- function(p1, n1, p2 = NULL, n2 = NULL, p0, alternative = "two.sided", conf.level = 0.95) { # defines a new fucntion "Z.prop.test()" that takes the arguments "p1" and "p2", sample sizes "n1" and "n2", null hypothesis proportion "p0", the type of test, and confidence level of 95%. If p2 and n2 are not provided, the test will be able to run a one-sample test. 
@@ -71,7 +71,7 @@ Z.prop.test <- function(p1, n1, p2 = NULL, n2 = NULL, p0, alternative = "two.sid
 
 ```
 
-### [2] The dataset from Kamilar and Cooper has in it a large number of variables related to life history and body size. For this exercise, the end aim is to fit a simple linear regression model to predict longevity (`MaxLongevity_m`) measured in months from species\' brain size (`Brain_Size_Species_Mean`) measured in grams. Do the following for both `longevity~brain size` and `log(longevity)~log(brain size)`:
+### [2] The dataset from Kamilar and Cooper has in it a large number of variables related to life history and body size. For this exercise, the end aim is to fit a simple linear regression model to predict longevity (`MaxLongevity_m`) measured in months from species' brain size (`Brain_Size_Species_Mean`) measured in grams. Do the following for both `longevity~brain size` and `log(longevity)~log(brain size)`:
 
 ```{r}
 k_and_c <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall23/KamilarAndCooperData.csv")
@@ -89,11 +89,19 @@ library(ggplot2)
 # Fit longevity~brain size model
 mod1 <- lm(MaxLongevity_m ~ Brain_Size_Species_Mean, data = d)
 
-plot1 <- ggplot(d, aes((Brain_Size_Species_Mean), (MaxLongevity_m), label = rownames(d))) + geom_point() + geom_smooth(method = "lm", formula = y ~ x, color = "pink") 
+# Extract coefficients from the model
+intercept <- round(coef(mod1)[1], 2)
+slope <- round(coef(mod1)[2], 2)
+
+# Create the equation text
+eq_text <- paste("Model 1: y =", slope, "x", "+", intercept)
+
+plot1 <- ggplot(d, aes((Brain_Size_Species_Mean), (MaxLongevity_m), label = rownames(d))) + geom_point() + 
+geom_smooth(method = "lm", formula = y ~ x, color = "red") + 
+labs(title = "Scatterplot with Fitted Line", x = "Brain Size (Species Mean)", y = "Max Longevity (Months)") + 
+geom_text(aes(x = 100, y = 750, label = eq_text), size = 4, color = "red") 
 
 plot1
-##plot1 + geom_text(check_overlap = TRUE)
-
 ```
 
 ##### *For log(longevity) \~ log(brain size)*
@@ -102,9 +110,16 @@ plot1
 # Fit log(longevity)~log(brain size) model
 mod2 <- lm(log(MaxLongevity_m) ~ log(Brain_Size_Species_Mean), data = d)
 
-plot2 <- ggplot(d, aes(log(Brain_Size_Species_Mean), log(MaxLongevity_m), label = rownames(d)))+ geom_point() + geom_smooth(method = "lm", formula = y ~ x, color = "blue") 
+# Extract coefficients from the model
+intercept2 <- round(coef(mod2)[1], 2)
+slope2 <- round(coef(mod2)[2], 2)
 
-##plot2 + geom_text(check_overlap = TRUE)
+# Create the equation text
+eq_text2 <- paste("Model 2: y =", slope2, "x", "+", intercept2)
+
+plot2 <- ggplot(d, aes(log(Brain_Size_Species_Mean), log(MaxLongevity_m), label = rownames(d)))+ geom_point() + geom_smooth(method = "lm", formula = y ~ x, color = "blue") + labs(title = "log(longevity)~log(brain size) model", x = "log(Brain Size (Species Mean))", y = "log(Max Longevity (Months))") + 
+geom_text(aes(x = 1.5, y = 6, label = eq_text2), size = 4, color = "blue") 
+
 plot2
 
 ```
@@ -146,7 +161,6 @@ confint(mod2, level = 0.9)
 ```{r}
 
 
-
 ```
 
 #### [d] Produce a point estimate and associated 90 percent PI for the longevity of a species whose brain weight is 800 gm. Do you trust the model to predict observations accurately for this value of the explanatory variable? Why or why not?
@@ -166,3 +180,11 @@ pi2
 ```
 
 #### [e] Looking at your two models, which do you think is better? Why?
+
+## Challenges
+
+1.  
+2.  
+3.  
+4.  
+5.  
