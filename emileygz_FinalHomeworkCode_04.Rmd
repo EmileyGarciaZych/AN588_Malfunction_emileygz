@@ -137,7 +137,10 @@ slope_estimate
 β1 = 1.21799
 
 ```{r}
-confint(mod1, level = 0.9)
+ci <- confint(mod1, level = 0.9)
+ci
+lwr <- ci [""]
+lwr
 ```
 
 ##### *For log(longevity) \~ log(brain size)*
@@ -159,8 +162,13 @@ confint(mod2, level = 0.9)
 ##### *For longevity \~ brain size*
 
 ```{r}
+plot1
 
-
+regression.data <- summary(mod1)
+names(regression.data)
+a= regression.data$coefficients["(Intercept)","Estimate"] #grab values
+b= regression.data$coefficients["x","Estimate"]
+abline(a,b) #add the regression line
 ```
 
 #### [d] Produce a point estimate and associated 90 percent PI for the longevity of a species whose brain weight is 800 gm. Do you trust the model to predict observations accurately for this value of the explanatory variable? Why or why not?
