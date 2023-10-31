@@ -102,7 +102,7 @@ plot1
 # Fit log(longevity)~log(brain size) model
 mod2 <- lm(log(MaxLongevity_m) ~ log(Brain_Size_Species_Mean), data = d)
 
-plot2 <- ggplot(d, aes(log(Brain_Size_Species_Mean), log(MaxLongevity_m), label = rownames(d)))+ geom_point() + geom_smooth(method = "lm", formula = y ~ x, color = "red") 
+plot2 <- ggplot(d, aes(log(Brain_Size_Species_Mean), log(MaxLongevity_m), label = rownames(d)))+ geom_point() + geom_smooth(method = "lm", formula = y ~ x, color = "blue") 
 
 ##plot2 + geom_text(check_overlap = TRUE)
 plot2
