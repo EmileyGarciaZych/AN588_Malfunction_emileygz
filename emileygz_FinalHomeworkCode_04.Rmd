@@ -9,11 +9,6 @@ output: html_document
 
 ## Emiley Garcia-Zych
 
-```{r}
-install.packages("gridExtra")
-install.packages("lmodel2")
-```
-
 ### [1] Write a simple R function, z.prop.test(), that can perform one- or two- sample Z-tests for proportion data, using the following guidelines:
 
 ```{r}
@@ -74,9 +69,11 @@ Z.prop.test <- function(p1, n1, p2 = NULL, n2 = NULL, p0, alternative = "two.sid
 ### [2] The dataset from Kamilar and Cooper has in it a large number of variables related to life history and body size. For this exercise, the end aim is to fit a simple linear regression model to predict longevity (`MaxLongevity_m`) measured in months from species' brain size (`Brain_Size_Species_Mean`) measured in grams. Do the following for both `longevity~brain size` and `log(longevity)~log(brain size)`:
 
 ```{r}
+library ('curl')
 k_and_c <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall23/KamilarAndCooperData.csv")
-d <- read.csv(k_and_c, header = TRUE, stringsAsFactors = FALSE)
-d
+d <- read.csv(k_and_c, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+
+d <- na.omit(d) ## omit incomplete data
 ```
 
 #### [a] Fit the regression model and, using {ggplot2}, produce a scatterplot with the fitted line superimposed upon the data. Append the the fitted model equation to your plot (HINT: use the function `geom_text()`).
@@ -86,8 +83,11 @@ d
 ```{r}
 library(ggplot2)
 
+longevity <- d$MaxLongevity_m ##establish longevity vector
+brain_size <- d$Brain_Size_Species_Mean ##establish brain size vector
+
 # Fit longevity~brain size model
-mod1 <- lm(MaxLongevity_m ~ Brain_Size_Species_Mean, data = d)
+mod1 <- lm(longevity ~ brain_size, data = d) 
 
 # Extract coefficients from the model
 intercept <- round(coef(mod1)[1], 2)
@@ -96,19 +96,23 @@ slope <- round(coef(mod1)[2], 2)
 # Create the equation text
 eq_text <- paste("Model 1: y =", slope, "x", "+", intercept)
 
-plot1 <- ggplot(d, aes((Brain_Size_Species_Mean), (MaxLongevity_m), label = rownames(d))) + geom_point() + 
-geom_smooth(method = "lm", formula = y ~ x, color = "red") + 
-labs(title = "Scatterplot with Fitted Line", x = "Brain Size (Species Mean)", y = "Max Longevity (Months)") + 
-geom_text(aes(x = 100, y = 750, label = eq_text), size = 4, color = "red") 
+plot1 <- ggplot(d, aes((brain_size), (longevity), label = rownames(d))) + geom_point() + 
+geom_smooth(method = "lm", formula = y ~ x, color = "#F17F29") + ##draw line
+labs(title = "Scatterplot with Fitted Line", x = "Brain Size (Species Mean)", y = "Max Longevity (Months)") + ##title
+geom_text(aes(x = 100, y = 750, label = eq_text), size = 4, color = "#F17F29") ##write equation
 
-plot1
+plot1 ##print
 ```
 
 ##### *For log(longevity) \~ log(brain size)*
 
 ```{r}
 # Fit log(longevity)~log(brain size) model
-mod2 <- lm(log(MaxLongevity_m) ~ log(Brain_Size_Species_Mean), data = d)
+
+longevity_log <- log(d$MaxLongevity_m)
+brain_size_log <- log(d$Brain_Size_Species_Mean)
+
+mod2 <- lm(longevity_log ~ brain_size_log, data = d)
 
 # Extract coefficients from the model
 intercept2 <- round(coef(mod2)[1], 2)
@@ -117,8 +121,8 @@ slope2 <- round(coef(mod2)[2], 2)
 # Create the equation text
 eq_text2 <- paste("Model 2: y =", slope2, "x", "+", intercept2)
 
-plot2 <- ggplot(d, aes(log(Brain_Size_Species_Mean), log(MaxLongevity_m), label = rownames(d)))+ geom_point() + geom_smooth(method = "lm", formula = y ~ x, color = "blue") + labs(title = "log(longevity)~log(brain size) model", x = "log(Brain Size (Species Mean))", y = "log(Max Longevity (Months))") + 
-geom_text(aes(x = 1.5, y = 6, label = eq_text2), size = 4, color = "blue") 
+plot2 <- ggplot(d, aes(brain_size_log, longevity_log, label = rownames(d)))+ geom_point() + geom_smooth(method = "lm", formula = y ~ x, color = "#32CBFF") + labs(title = "log(longevity)~log(brain size) model", x = "log(Brain Size (Species Mean))", y = "log(Max Longevity (Months))") + ##write titles
+geom_text(aes(x = 2.5, y = 6.25, label = eq_text2), size = 4, color = "#32CBFF") ##write equation
 
 plot2
 
@@ -130,31 +134,32 @@ plot2
 
 ```{r}
 summary_lm <- summary(mod1)
-slope_estimate <- summary_lm["coefficients"]
+slope_estimate <- summary_lm["coefficients"] ##calculate slope
 slope_estimate
 ```
 
-β1 = 1.21799
+β1 = 0.8789037
+
+Since β1 does not equal zero, we reject the null hypothesis and accept the alternative hypothesis.
 
 ```{r}
-ci <- confint(mod1, level = 0.9)
-ci
-lwr <- ci [""]
-lwr
+confint(mod1, level = 0.9) ##calculate confidence interval
 ```
 
 ##### *For log(longevity) \~ log(brain size)*
 
 ```{r}
 summary_log <- summary(mod2)
-slope_estimate_log <- summary_log["coefficients"]
-slope_estimate_log
+slope_estimate_log <- summary_log["coefficients"] ##calculate slope 
+slope_estimate_log 
 ```
 
-β1 = 0.2341496
+β1 = 0.2028543
+
+Since β1 does not equal zero, we reject the null hypothesis and accept the alternative hypothesis.
 
 ```{r}
-confint(mod2, level = 0.9)
+confint(mod2, level = 0.9) ##calculate confidence interval
 ```
 
 #### [c] Using your model, add lines for the 90 percent confidence and prediction interval bands on the plot and add a legend to differentiate between the lines.
@@ -162,37 +167,72 @@ confint(mod2, level = 0.9)
 ##### *For longevity \~ brain size*
 
 ```{r}
-plot1
+ci <- predict(mod1, newdata = data.frame(brain_size), interval = "confidence", level = 0.90) ##calculate the confidence interval
 
-regression.data <- summary(mod1)
-names(regression.data)
-a= regression.data$coefficients["(Intercept)","Estimate"] #grab values
-b= regression.data$coefficients["x","Estimate"]
-abline(a,b) #add the regression line
+info <- data.frame(cbind(brain_size, longevity, ci)) ##binding new data frame with confidence interval 
+
+names(info) <- c("x", "y", "CIfit", "CIlwr", "CIupr") #naming the columns
+
+pi <- predict(mod1, newdata = data.frame(brain_size), interval = "prediction", level = 0.90)  ##predict prediction interval 
+
+info_ci_pi <- cbind(info, pi) ##binding updated data frame
+
+names(info_ci_pi) <- c("x", "y", "CIfit", "CIlwr", "CIupr", "PIfit", "PIlwr", "PIupr") ##updated names of columns
+
+plot1b <- ggplot(data = info_ci_pi, aes(brain_size, longevity, label = rownames(d)))  ##drawing original plot with labels
+plot1b <- plot1b + geom_point(alpha = 1/2) + geom_line(aes(x = x, y = CIfit, colour = "fit")) + geom_line(aes(x = x, y = CIlwr, colour = "CI")) + geom_line(aes(x = x, y = CIupr, colour = "CI")) + geom_line(aes(x = x, y = PIlwr, colour = "PI")) + geom_line(aes(x = x, y = PIupr, colour = "PI")) + scale_color_manual(values = c("fit" = "black","CI" = "#F96900","PI" = "#00A5E0")) + theme(legend.position = "bottom", legend.title = element_blank()) ##drawing points and lines
+
+plot1b ##print graph 
 ```
 
-#### [d] Produce a point estimate and associated 90 percent PI for the longevity of a species whose brain weight is 800 gm. Do you trust the model to predict observations accurately for this value of the explanatory variable? Why or why not?
+##### *For log(longevity) \~ log(brain size)*
+
+```{r}
+ci2 <- predict(mod2, newdata = data.frame(Brain_Size_Log = brain_size_log), interval = "confidence", level = 0.90) ##calculate the confidence interval
+
+info_log <- data.frame(cbind(brain_size_log, longevity_log, ci2)) ##binding new data frame with confidence interval 
+
+names(info_log) <- c("x", "y", "CIfit", "CIlwr", "CIupr") #naming the columns
+
+pi2 <- predict(mod2, newdata = data.frame(Brain_Size_Log = brain_size_log), interval = "prediction", level = 0.90)  ##predict prediction interval 
+
+info_log_pi <- cbind(info_log, pi2) ##updating data frame
+
+names(info_log_pi) <- c("x", "y", "CIfit", "CIlwr", "CIupr", "PIfit", "PIlwr", "PIupr") #naming the columns
+
+plot2b <- ggplot(data = info_log_pi, aes(brain_size_log, longevity_log, label = rownames(d))) 
+plot2b <- plot2b + geom_point(alpha = 1/2) + geom_line(aes(x = x, y = CIfit, colour = "fit")) + geom_line(aes(x = x, y = CIlwr, colour = "CI")) + geom_line(aes(x = x, y = CIupr, colour = "CI")) + geom_line(aes(x = x, y = PIlwr, colour = "PI")) + geom_line(aes(x = x, y = PIupr, colour = "PI")) + scale_color_manual(values = c("fit" = "black","CI" = "#F96900","PI" = "#00A5E0")) + theme(legend.position = "bottom", legend.title = element_blank())
+
+plot2b 
+
+```
+
+#### [d] Produce a point estimate and associated 90 percent PI for the longevity of a species whose brain weight is 800 gm.
 
 *For longevity \~ brain size*
 
 ```{r}
-pi1 <- predict(mod1, newdata = data.frame(Brain_Size_Species_Mean = 800), interval = "prediction", level = 0.90)
+pi1 <- predict(mod1, newdata = data.frame(brain_size = 800), interval = "prediction", level = 0.90) ##predict method to calculate PI
 pi1
 ```
 
 *For log(longevity) \~ log(brain size)*
 
 ```{r}
-pi2 <- predict(mod2, newdata = data.frame(Brain_Size_Species_Mean = 800), interval = "prediction", level = 0.90)
+pi2 <- predict(mod2, newdata = data.frame(brain_size_log = 800), interval = "prediction", level = 0.90) ##predict method to calculate PI
 pi2
 ```
 
 #### [e] Looking at your two models, which do you think is better? Why?
 
+The logarithmic regression model is better because it normalizes skewed data. The confidence intervals are more centralized around the mean and the range of values is smaller.
+
 ## Challenges
 
-1.  
-2.  
-3.  
-4.  
-5.  
+1.  I struggled to generate the equation for the fit line in the original scatter plots. I was able to graph it but was confused about how to pull the data I needed for the equation. I hoped there was a method where I could just pull the line from the geom_smooth generated line but there wasn't. I then used the coefficients from the summary of the module to write the line.
+
+2.  I also struggled to call the variables from the original data. I kept getting the atomic.vector warning and as a result couldn't use d\$variable to extract the element. I don't know why this was as I tested it in multiple locations and right after pulling the data, it claimed they were atomic. In office hours, we figured out we didn't even need to include the d\$ portion.
+
+3.  I also struggled to find the prediction interval because of this calling issue. In office hours, we went over an easier method and how to format everything.
+
+4.  I was unable to add the confidence and prediction interval bands to the original graphs. This is also tied to my variable issue. Whenever I try to call Brain_Size_Species_Mean it claims the variable doesn't exist or that the vector length is too long/doesn't match. I fixed this by storing the vectors into different smaller vectors at the start of the code. Jessica and Nicole helped me with this. They both had different suggestions for how to change everything so it ran smoothly. This made it so I didn't have to call it from original data and could keep everything organized.
